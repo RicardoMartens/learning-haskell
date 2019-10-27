@@ -1,119 +1,114 @@
+-- These are modules!
 import Data.List
 import System.IO
 
-main = do 
-    putStrLn "What is your name?"
-    name <- getLine 
-    putStrLn ("Hey, " ++ name ++ ". Now how old are you exactly?")
-    age <- getLine
-    putStrLn("Ah perfect, so you are " ++ name ++ " and you are " ++ age ++ " years old")
+-- Example to import functions from a file to
+--module SampFunctions (getClass, doubleEvenNumbers) where 
+--import SampFunctions -- To use it in our program
 
--- Type decleration
-addMe :: Int -> Int -> Int
+--Emumerated types
+data Person = Baby 
+            | Child 
+            | Teenager 
+            | Adult
+            deriving Show
 
---Function always goes like: 
-addMe x y = x + y
+ricardoMartens :: Person -> Bool
+ricardoMartens Adult = True
+ricardoIsAnAdult = print(ricardoMartens Adult)
 
-addedValue = addMe 6 9
+-- Custom types
+data Student = Student String String String
+-- Data student could also be data School = Teacher | Student | Classroom
+    deriving Show 
 
--- Adding tuples
-addATuple :: (Int, Int) -> (Int, Int) -> (Int, Int)
-addATuple (x, y) (x2, y2) = (x + x2, y + y2)
+sanderBussink :: Student
+sanderBussink = Student "Sander Bussink" "Yeetstreet 123" "Lives with his parents"
 
--- Perform actions based on input
-whatAge :: Int -> String
-whatAge 16 = "You are allowed to get your drivers license!"
-whatAge 18 = "You can drink!"
-whatAge 20 = "This is Ricardo's age as well!"
-whatAge _ = "Sorry, there is nothing important for this"
+getStudent :: Student -> String
+getStudent (Student n _ _) = n
 
--- Recursion time! a good example is factorial since we used that in the lesson too.
-factorial :: Int -> Int
+-- Polymorphic type
+data Shape = Circle Float Float Float | Rectangle Float Float Float Float
+    deriving Show
 
-factorial 0 = 1
-factorial n = n * factorial (n - 1)
+area :: Shape -> Float
 
--- Simpler way to do this
-prodFact n = product [1..n] -- Pass in n and take the product of that
+area (Circle _ _ r) = pi * r ^ 2
+--area (Rectange x y x2 y2) = (abs (x2 - x)) * (abs (y2 - y))
+-- Can use dollar signs to avoid parenthesis (Is used a lot!)
+area (Rectangle x y x2 y2) = (abs $ x2 - x) * (abs $ y2 - y)
 
--- Guards
-isOdd :: Int -> Bool 
-isOdd n 
-    | n `mod` 2 == 0 = False -- If its even, return false
-    | otherwise = True
+-- Using the . operator, it chains value together
+--sumValue = putStrLn (show (1 + 2))
+sumValue = putStrLn . show $ 1 + 2
+areaOfCircle = area (Circle 50 60 20)
+areaOfRect = area $ Rectangle 10 10 100 100
 
-whatGrade :: Int -> String
-whatGrade n
-    | (n == 10) && (n > 6) = "You aced the test!"
-    | (n == 6) = "You barely passed, but still a good job!"
-    | (n < 5) && (n >= 1) = "Try better next time!"
-    | otherwise = "Try the test next time"
+-- Type classes, are gonna correspond to sets of types which have certain operations defined for them
+-- so if we did :t (+), for any value of a that is an instance of Num, we can add it!
 
--- Using where
-avgAttendanceRating :: Double -> Double -> String
-avgAttendanceRating lessons notInClass
-    | avg <= 0.550 = "Attend more classes!"
-    | avg <= 0.750 = "Average attender"
-    | avg <= 0.900 = "You're almost always there!"
-    | otherwise = "Thank you for always being in class"
-    where avg = (lessons - notInClass) / 100
+-- Here an employee can be showed as a string, and checked for equality between them
+data Employee = Employee { name :: String,
+                           position :: String,
+                           idNum :: Int
+                         } deriving (Eq, Show)
 
--- Using a function to get items from a list
-getListItems :: [Int] -> String
-getListItems [] = "Your list is empty" 
-getListItems (x:[]) = "Your list starts with " ++ show x 
-getListItems (x:y:[]) = "Your list contains " ++ show x ++ " " ++ show y
-getListItems(x:y:z:[]) = "Your first 3 items in the list are " ++ show x ++ " " ++ show y ++ " " ++ show z
-getListItems(x:xs) = "The first items is " ++ show x ++ ". The rest of the items are " ++ show xs
+ricardoMartens1 = Employee {name = "Ricardo Martens", position = "Student", idNum = 592584}     
+ricardoMartens2 = Employee {name = "Ricardo Martens", position = "Manager", idNum = 592581}       
 
-getFirstItem :: String -> String
+isRicardo1Ricardo2 = ricardoMartens1 == ricardoMartens2 -- Returns false
+ricardoMartens1Data = show ricardoMartens1
 
-getFirstItem [] = "Empty String"
-getFirstItem all@(x:xs) = "The first letter in " ++ all ++ " is " ++ [x]
+data ShirtSize = S | M | L
+-- Override Eq and Show methods
+instance Eq ShirtSize where
+    S == S = True
+    M == M = True
+    L == L = True
+    _ == _ = False
 
--- Higher order functions
-times10 :: Int -> Int
-times10 x = x * 10
+instance Show ShirtSize where
+    show S = "Small"
+    show M = "Medium"
+    show L = "Large"
 
-listTimes10 = map times10 [1, 2, 3, 4, 5]
+-- Elem checks if something is in a list
+smallAvail = S `elem` [S, M, L]
+sizeOfShirt = show S
 
--- Making our own map using recursion
-multBy10 :: [Int] -> [Int]
-multBy10 [] = []
-multBy10 (x:xs) = times10 x : multBy10 xs 
--- First value x, 
--- times 10, and call the same function again with the rest of the items
--- That means the first value has changed!
+--Custom typeClass
+class MyEq a where
+    areEqual :: a -> a -> Bool
 
---Checking again if strings are equal using recursion
-areStringsEqual :: [Char] -> [Char] -> Bool
-areStringsEqual [] [] = True
-areStringsEqual (x:xs) (y:ys) = x == y && areStringsEqual xs ys
-areStringsEqual _ _ = False
+instance MyEq ShirtSize where
+    areEqual S S = True
+    areEqual M M = True
+    areEqual L L = True
+    areEqual _ _ = False
+newSize = areEqual M M 
 
--- We expect a function to be passed (receive) inside a function using () decleration
-doMult :: (Int -> Int) -> Int
-doMult func = func 3
-num3Times10 = doMult times10 -- Use the times 10 function 
+-- I/O's
+tellMeHello = do
+    putStrLn "Who are you? (Provide a name)"
+    name <- getLine
+    putStrLn $ "Hello " ++ name
 
--- We can also return functions from a function
-getAddFunction :: Int -> (Int -> Int)
+-- File I/O's
+writeToFile = do
+    theFile <- openFile "test.txt" WriteMode
+    hPutStrLn theFile $ "Random line of text, seeing if this can write to a file!"
+    hClose theFile
 
-getAddFunction x y = x + y 
-adds10 = getAddFunction 10
-tenPlusTen = adds10 10
+readFromFile = do
+    theFile <- openFile "test.txt" ReadMode
+    contents <- hGetContents theFile
+    putStrLn contents
+    hClose theFile
 
---Lambdas are defined using a backslash
-dbl1To20 = map (\x -> x * 2) [1..20]
-
--- Using if clauses, if's always need elses in Haskell
-doubleEvenNumber y = 
-    if (y `mod` 2 /= 0)
-        then y
-        else y * 2
---Using case
-getClass :: Int -> String
-getClass n = case n of
-    5 -> "Go to Kindergarten"
-    6 -> "Go to elementary school"
-    _ -> "Go away"
+-- Fibonacci Sequence!
+fib = 1 : 1 : [a + b | (a, b) <- zip fib $ tail fib]
+-- First sequence returns [1, 1, 2] cause first element was 1 and tail was 1, so 1 + 1 = 2
+-- Second sequence returns [1, 1, 2, 3] the second 1 and the tail was 2, so 1 + 2 = 3
+-- So on  and on, pretty cool!
+fib5 = fib !! 5

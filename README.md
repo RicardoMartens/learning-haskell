@@ -42,7 +42,17 @@ A neat little thing the GHCi uses is being able to see what operators exactly do
 ```
 We get to see how exactly the +-operator works
 This means it takes 2 parameters (first a and second a) and puts out a result (the final a). 
+## The Challenge
+For the challenge, I went out of my way into something I'm always interested in, bots! (I made one myself using python a bit back for Twitch, a streaming service). I absolutely love the way you are able to interact with them and I read you can also do this with Haskell, so that's what I'm going to do! So, for this I want to make a custom IRC bot.
 
+A set of things I want to achieve:
+
+| Functionality                                                   	| MoSCoW 	| Done               	|
+|-----------------------------------------------------------------	|--------	|--------------------	|
+| It can responds to commands such as hello or how are you        	| Must   	| ⬜️ 	|
+| It should be able to let someone know if someone placed a tweet 	| Must   	| ⬜️ 	|
+| Can communicate with other bots                                 	| Should 	| ⬜️ 	|
+| You can gain points using the bot                               	| Should 	| ⬜️ 	|
 ## Little code examples
 I thought, looking back at the list of things to look out for, to show some little code examples I already tried out in my own code!
 ### Filtering
@@ -54,7 +64,9 @@ evensUpTo100 = takeWhile (<= 100) [1,2..]
 What this does is it looks at x, makes a list of values 1 through 500 in a list, and store that in x **BUT** filter it to only allow values that can be divided by 15 or by 10. On top of that, we could also filter a list immediately to print out values only bigger than 10 as seen in the 2nd example. The 3rd example shows a sort of a while loop. Meaning while values are less than or equal to 100, keep putting values (people tend to call Haskell lazy because of it allowing infinity) into a list till it hits 101
 
 ### Functions
-Functions in Haskell aren't surprisingly hard! However there are some things about them. Functions that don't receive parameters are called definiations or a name. They also can't start with an uppercase letter They always go like this: 
+Functions in Haskell aren't surprisingly hard! However there are some things about them. Functions that don't receive parameters are called definiations or a name. They also can't start with an uppercase letter cause thats only used for types in Haskell. 
+
+Functions go like this:
 ```
 myFuncName param1 param2 = operations (which is the returned value)
 ```
@@ -162,3 +174,73 @@ getClass n = case n of
     _ -> "Go away"
 ```
 This kind of works like a switch statement in Java. If the number is 5, they need to go to Kindergarten, and so on. Quite easy!
+
+### Types
+So I learned about types. Types almost look to me like classes, but they aren't (luckily). It's very interesting how easily they are made, so I'll put an some examples down in this chapter
+
+#### Enumerated types
+Works the same as enums in Java, here an example:
+```haskell
+data Person = Baby
+            | Child
+            | Teenager
+            | Adult
+            deriving Show
+```
+This little code block gives an example of what a person could be (4 choices). Deriving show means that we can use it as a String to print it to the console.
+
+If I were to use this type I would do this:
+```haskell
+ricardoMartens :: Person -> Bool
+ricardoMartens Adult = True
+ricardoIsAnAdult = print(ricardoMartens Adult)
+```
+Cause yes, I am an adult 😉
+#### Custom types
+With that, I also learned to make some custom types, so lets say we wanted to make a custom type of a Student:
+```haskell
+data Student = Student String String String
+    deriving Show 
+```
+This makes a custom student type, which expects 3 different Strings. We can now use it like this, using one of my fellow students:
+```haskell
+sanderBussink :: Student
+sanderBussink = Student "Sander Bussink" "Yeetstreet 123" "Lives with his parents"
+```
+Then with the following function:
+```haskell 
+getStudent :: Student -> String
+getStudent (Student n _ _) = n
+```
+We can get his name, the underscores are basically saying "don't use this value, we only care about the name".
+
+#### Polymorphic types
+We learned about polymorphism with Java, but haskell has it too with its types. Let's say we wanted to make a shape (a circle and a rectangle). This goes as follows: 
+```haskell
+data Shape = Circle Float Float Float | Rectangle Float Float Float Float
+    deriving Show
+```
+We expect a circle to have 3 floats, an x, y and a radius. For a rectangle we expect it to have an x, y, x1 and y2. We can then use this to calculate areas for instance: 
+```haskell 
+area :: Shape -> Float
+area (Circle _ _ r) = pi * r ^ 2
+area (Rectangle x y x2 y2) = (abs $ x2 - x) * (abs $ y2 - y)
+```
+So the dollar sign in here replaces a set of parenthesis, telling the compiler that the set, whats normally inside of parenthesis, goes first. But the code almost speaks for itself, for a circle we care about the radius and how it is calculated. For the rectangle we want absolute values between x, x2 and y and y2. For more examples of this, there will be examples in the code.
+
+### I/O
+Input and outputs are definetely fun to play around with, we can even write to files and read from them which is amazing and really easy! So let's try it with this example: 
+```haskell 
+-- File I/O's
+writeToFile = do
+    theFile <- openFile "test.txt" WriteMode
+    hPutStrLn theFile $ "Random line of text, seeing if this can write to a file!"
+    hClose theFile
+
+readFromFile = do
+    theFile <- openFile "test.txt" ReadMode
+    contents <- hGetContents theFile
+    putStrLn contents
+    hClose theFile
+```
+Here we can write to a file and read from a file. First we write that our file has to be opened first and what mode we want to apply to it. Then we want to put a bit of text in the file which is the 2nd line. Then we want to close the file and move on. In the second example we read the information on a file, we gather the contents in a constant and print all the content out in the console. 
