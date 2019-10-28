@@ -1,114 +1,139 @@
--- These are modules!
-import Data.List
+{-# LANGUAGE OverloadedStrings #-}  -- allows "string literals" to be Text
+
+-- import Control.Monad (when)
+-- import Data.Text (isPrefixOf, toLower, Text)
+-- import Control.Concurrent (threadDelay)
+-- import qualified Data.Text.IO as TIO
+
+-- import Discord
+-- import Discord.Types
+-- import qualified Discord.Requests as R
+
+-- main :: IO()
+-- main = pingpongExample
+
+-- -- | Replies "pong" to every message that starts with "ping"
+-- pingpongExample :: IO ()
+-- pingpongExample = do userFacingError <- runDiscord $ def
+--                                             { discordToken = "NjM4MzQzNjQ0MjQzNTU4NDUx.XbbWmQ.tMdUld-otvsEmT1RmKrJBYiaX-c"
+--                                             , discordOnEvent = eventHandler }
+--                      TIO.putStrLn userFacingError
+
+-- eventHandler :: DiscordHandle -> Event -> IO ()
+-- eventHandler dis event = case event of
+--        MessageCreate m -> when (not (fromBot m) && isPing (messageText m) && isBotChannel (messageChannel m)) $ do
+--                _ <- restCall dis (R.CreateReaction (messageChannel m, messageId m) "eyes")
+--                threadDelay (2 * 10^6) -- Wait 2 seconds
+--                _ <- restCall dis (R.CreateMessage (messageChannel m) "Pong!")
+--                pure ()
+--        _ -> pure ()
+
+-- fromBot :: Message -> Bool
+-- fromBot m = userIsBot (messageAuthor m)
+
+-- isPing :: Text -> Bool
+-- isPing = ("ping" `isPrefixOf`) . toLower
+
+-- isBotChannel :: Channel -> Bool
+-- isBotChannel 
+
+-- --(ChannelText _ _ "#haskell-bot" _ _ _ _) = True
+             
 import System.IO
+import System.Exit 
+import qualified Network.Socket as N
+import Control.Exception
+import Control.Monad (mapM_)
+import Control.Monad.IO.Class
+import Control.Monad.Trans.Reader
+import Data.Text (isPrefixOf, toLower, Text, pack, unpack, splitOn)
+import Data.List (intercalate)
 
--- Example to import functions from a file to
---module SampFunctions (getClass, doubleEvenNumbers) where 
---import SampFunctions -- To use it in our program
+serverHost = "irc.twitch.tv" :: String
+myNick = "icenezzbot\r\n" :: String
+myPort = 6667 :: N.PortNumber
+myPass = "oauth:5bgiunromia4ytl8kfmoulz2fno5ka \r\n"  :: String
+myChannel = "#icenezznl\r\n"
+myUserName = "IcenezzNL"
+twitchTvCommands = "twitch.tv/commands"
 
---Emumerated types
-data Person = Baby 
-            | Child 
-            | Teenager 
-            | Adult
-            deriving Show
+main :: IO ()
+main = bracket connect disconnect loop
+    where 
+        disconnect = hClose . iceBotSocket
+        loop state = runReaderT run state
+    -- h <- connectTo serverHost myPort
+    -- write h "PASS " myPass 
+    -- write h "NICK " myNick
+    -- write h "JOIN " myChannel
+    -- listen h
 
-ricardoMartens :: Person -> Bool
-ricardoMartens Adult = True
-ricardoIsAnAdult = print(ricardoMartens Adult)
+data IceBot = IceBot { iceBotSocket :: Handle}
+type Net = ReaderT IceBot IO
 
--- Custom types
-data Student = Student String String String
--- Data student could also be data School = Teacher | Student | Classroom
-    deriving Show 
+connect :: IO IceBot
+connect = notify $ do
+    h <- connectTo serverHost myPort
+    return (IceBot h)
+    where
+        notify n = bracket_
+         (putStrLn ("Connecting to " ++ serverHost ++ " ...") >> hFlush stdout)
+         (putStrLn "done.")
+         n
 
-sanderBussink :: Student
-sanderBussink = Student "Sander Bussink" "Yeetstreet 123" "Lives with his parents"
+connectTo :: N.HostName -> N.PortNumber -> IO Handle
+connectTo host port = do
+    hostAddres : _ <- N.getAddrInfo Nothing (Just host) (Just (show port))
+    hostSocket <- N.socket (N.addrFamily hostAddres) (N.addrSocketType hostAddres) (N.addrProtocol hostAddres)
+    N.connect hostSocket (N.addrAddress hostAddres)
+    N.socketToHandle hostSocket ReadWriteMode
 
-getStudent :: Student -> String
-getStudent (Student n _ _) = n
+run :: Net ()
+run = do 
+    write "CAP REQ :" twitchTvCommands
+    write "PASS " myPass 
+    write "NICK " myNick
+    write "JOIN " myChannel
+    listen
 
--- Polymorphic type
-data Shape = Circle Float Float Float | Rectangle Float Float Float Float
-    deriving Show
 
-area :: Shape -> Float
+write :: String -> String -> Net ()
+write cmd args = do
+    h <- asks iceBotSocket
+    let msg = cmd ++ " " ++ args ++ "\r\n"
+    liftIO $ hPutStr h msg
+    liftIO $ putStr ("> " ++ msg)
 
-area (Circle _ _ r) = pi * r ^ 2
---area (Rectange x y x2 y2) = (abs (x2 - x)) * (abs (y2 - y))
--- Can use dollar signs to avoid parenthesis (Is used a lot!)
-area (Rectangle x y x2 y2) = (abs $ x2 - x) * (abs $ y2 - y)
+listen :: Net ()
+listen = forever $ do
+    h <- asks iceBotSocket
+    line <- liftIO $ hGetLine h
+    let cleanLine = init line
+    liftIO (putStrLn $ clean cleanLine)
+    liftIO (putStrLn $ getUsername cleanLine)
+    if isPing cleanLine then pong cleanLine else evalStr (clean cleanLine)
+    if (clean cleanLine) == "hey" then sendMsg (".w " ++ show (getUsername cleanLine) ++ " hey you bot maker!") else return()
+    if (clean cleanLine) == "clean" then sendMsg (".clear") else return()
+    where
+        forever :: Net () -> Net ()
+        forever a = do a; forever a 
 
--- Using the . operator, it chains value together
---sumValue = putStrLn (show (1 + 2))
-sumValue = putStrLn . show $ 1 + 2
-areaOfCircle = area (Circle 50 60 20)
-areaOfRect = area $ Rectangle 10 10 100 100
+        clean :: String -> String 
+        clean = drop 1 . dropWhile (/= ':') . drop 1
 
--- Type classes, are gonna correspond to sets of types which have certain operations defined for them
--- so if we did :t (+), for any value of a that is an instance of Num, we can add it!
+        isPing :: String -> Bool
+        isPing m = "PING" `isPrefixOf` pack m
 
--- Here an employee can be showed as a string, and checked for equality between them
-data Employee = Employee { name :: String,
-                           position :: String,
-                           idNum :: Int
-                         } deriving (Eq, Show)
+        pong :: String -> Net ()
+        pong m = write "PONG" (':' : drop 6 m)
 
-ricardoMartens1 = Employee {name = "Ricardo Martens", position = "Student", idNum = 592584}     
-ricardoMartens2 = Employee {name = "Ricardo Martens", position = "Manager", idNum = 592581}       
+evalStr :: String -> Net ()
+evalStr "!quit" = write "QUIT" ":Exiting" >> liftIO exitSuccess
+evalStr x | "!id " `isPrefixOf` pack x = sendMsg (drop 4 x)
+evalStr _ = return()
 
-isRicardo1Ricardo2 = ricardoMartens1 == ricardoMartens2 -- Returns false
-ricardoMartens1Data = show ricardoMartens1
+sendMsg :: String -> Net ()
+sendMsg s = write "PRIVMSG" (myChannel ++ " :" ++ s ++ "\r\n")
 
-data ShirtSize = S | M | L
--- Override Eq and Show methods
-instance Eq ShirtSize where
-    S == S = True
-    M == M = True
-    L == L = True
-    _ == _ = False
-
-instance Show ShirtSize where
-    show S = "Small"
-    show M = "Medium"
-    show L = "Large"
-
--- Elem checks if something is in a list
-smallAvail = S `elem` [S, M, L]
-sizeOfShirt = show S
-
---Custom typeClass
-class MyEq a where
-    areEqual :: a -> a -> Bool
-
-instance MyEq ShirtSize where
-    areEqual S S = True
-    areEqual M M = True
-    areEqual L L = True
-    areEqual _ _ = False
-newSize = areEqual M M 
-
--- I/O's
-tellMeHello = do
-    putStrLn "Who are you? (Provide a name)"
-    name <- getLine
-    putStrLn $ "Hello " ++ name
-
--- File I/O's
-writeToFile = do
-    theFile <- openFile "test.txt" WriteMode
-    hPutStrLn theFile $ "Random line of text, seeing if this can write to a file!"
-    hClose theFile
-
-readFromFile = do
-    theFile <- openFile "test.txt" ReadMode
-    contents <- hGetContents theFile
-    putStrLn contents
-    hClose theFile
-
--- Fibonacci Sequence!
-fib = 1 : 1 : [a + b | (a, b) <- zip fib $ tail fib]
--- First sequence returns [1, 1, 2] cause first element was 1 and tail was 1, so 1 + 1 = 2
--- Second sequence returns [1, 1, 2, 3] the second 1 and the tail was 2, so 1 + 2 = 3
--- So on  and on, pretty cool!
-fib5 = fib !! 5
+getUsername :: String -> String
+getUsername = drop 1 . takeWhile(/= '!')

@@ -244,3 +244,11 @@ readFromFile = do
     hClose theFile
 ```
 Here we can write to a file and read from a file. First we write that our file has to be opened first and what mode we want to apply to it. Then we want to put a bit of text in the file which is the 2nd line. Then we want to close the file and move on. In the second example we read the information on a file, we gather the contents in a constant and print all the content out in the console. 
+
+## Nifty Links
+https://github.com/aquarial/discord-haskell/wiki/Creating-your-first-Bot 
+
+https://github.com/aquarial/discord-haskell 
+
+### Installed cabals
+- Network
