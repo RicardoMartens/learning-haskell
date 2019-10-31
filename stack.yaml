@@ -38,8 +38,7 @@ extra-deps:
 - acme-missiles-0.3
 #- git: https://github.com/commercialhaskell/stack.git
 #  commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-- discord-haskell-1.1.3
-- emoji-0.1.0.2
+#
 
 # extra-deps: []
 
