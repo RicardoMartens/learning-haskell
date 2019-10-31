@@ -91,7 +91,10 @@ I didn't want to make this too difficult so I set few points that I want to achi
 | You can gain points using the bot                               	| Should   	| ❎ 	|
 
 
+## Running my challenge
+As seen there is an authentication token for my bot, which you can use freely this time. I am not changing it so once you run this source code you should be able to see this bot active in my channel: https://www.twitch.tv/icenezznl 
 
+To run the code, simply install stack so you get the GHCI. Then, you should be able to run ghci main (run the main file). Then type main again and it should boot up for you
 ## A few issues
 ### The Challenge
 When I first started off, I could grasp Haskell quite easily. I thought it was so easy that I would make a Twitter clone, but I think I went a bit too far in that. So, I had to adjust my challenge and make something I actually really enjoy and should be a bit easier to do: making bots. 
