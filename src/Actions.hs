@@ -59,13 +59,12 @@ handleUserActions h s = do
 -- Handles other actions such as commands that are for admins/moderators that dont involve usernames or just fun commands
 handleCommandActions :: Handle -> String -> IO ()
 handleCommandActions h s = do 
-    if (s) == "clean" then sendMsg h (".clear") else return() -- Clears the chat 
-    if (s) == "timeout" -- Makes it able to time a user out/silencly muting them
+    if (s) == "clean" 
         then do 
-            sendMsg h (".timeout icenezzbot 1")
-            threadDelay 1000000 -- Lets it sleep for 1 second
-            sendMsg h ("You really made me delete my own messages? Rude") 
-        else return ()
+            sendMsg h (".clear") 
+            sendMsg h ("Cleared the chat for you!")
+        else return() -- Clears the chat 
+
 
 
 -- This basically makes us able to send messages with the bot

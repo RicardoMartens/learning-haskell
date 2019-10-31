@@ -103,7 +103,7 @@ I of course didn't expect to work with the normal mathmetical functions I was us
 I encountered a lot of issues when working on the bot, but the learning experience all the way through it was worth it. Sadly, I wasn't able to implement all my shoulds and extra stuff such as gaining points when you stay in the channel for a certain amount or time, or being able to add more than 1 command to the bot (since I write it to a file, but couldnt get it to go inside of an array). I did search alternatives for this such as appending to a file and all that, but I couldn't get it to work, costing me also a lot of precious time. Eitherway, the things I did get implemented are as followed:
 
 - When you send a message in chat such as "hey" "hello bot" and "do you like chess?" you get a reaction from the bot or even a whisper (I recommend creating an account on Twitch for that)
-- There are commands that only work for staff in a chat such as "clean" and "timeout". These corresponding commands make it able to clear an entire chat (which the bot can do) and timeout (a funny one, since I put it that it would timeout the bot and put a message after it)
+- There are commands that only work for staff in a chat such as "clean". This corresponding commands makes it able to clear an entire chat (which the bot can do)
 - You are able to add a command using !addcommand [command]
 - You are able to delete that command using !removecommand [command] (It doesn't actually remove the command sadly since I didn't find a way to go about that)
 - Keep in mind that I was not able to make it so it would move on to the next line in the file, so only 1 command is possible of being added.
